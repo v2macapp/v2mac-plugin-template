@@ -2,7 +2,7 @@
   "api": 1,
   "id": "hello-pty",
   "name": "Hello Terminal",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "V2Mac",
   "icon": "icon.svg",
   "display": "pty",
@@ -16,6 +16,6 @@
   "permissions": [
     "ssh-agent"
   ],
-  "changelog": "First sample.",
+  "changelog": "Built on the base of V2Mac Sandbox 1.0.0: downloads only what it adds.",
   "securityNotes": "Asks for ssh-agent so SSH through the mini VM's exit can use your Mac's keys."
 }

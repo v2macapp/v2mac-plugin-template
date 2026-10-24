@@ -34,4 +34,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PLUGIN_DIR: ${{ steps.plugin.outputs.dir }}
           RELEASE_TAG: ${{ github.ref_name }}
-        run: gh release create "$RELEASE_TAG" dist/*.tar dist/plugin.json "$PLUGIN_DIR/icon.svg" --title "$RELEASE_TAG" --notes "$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1])).get("changelog",""))' "$PLUGIN_DIR/plugin.json")"
+        run: gh release create "$RELEASE_TAG" dist/*.tar.gz dist/plugin.json "$PLUGIN_DIR/icon.svg" --title "$RELEASE_TAG" --notes "$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1])).get("changelog",""))' "$PLUGIN_DIR/plugin.json")"

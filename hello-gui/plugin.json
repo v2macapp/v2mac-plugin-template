@@ -2,7 +2,7 @@
   "api": 1,
   "id": "hello-gui",
   "name": "Hello Window",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "V2Mac",
   "icon": "icon.svg",
   "display": "gui",
@@ -17,6 +17,6 @@
     "clipboard",
     "shared"
   ],
-  "changelog": "First sample.",
+  "changelog": "Built on the base of V2Mac Sandbox 1.0.0: downloads only what it adds.",
   "securityNotes": "Asks for the clipboard and the Shared folder to show both work."
 }

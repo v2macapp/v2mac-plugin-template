@@ -2,7 +2,7 @@
   "api": 1,
   "id": "hello-pty",
   "name": "Hello Terminal",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "V2Mac",
   "icon": "icon.svg",
   "display": "pty",

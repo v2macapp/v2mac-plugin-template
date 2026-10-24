@@ -1,4 +1,4 @@
-# Sample built from the template: FROM the released base-gui.
+# Sample built from the template: FROM the released base (the sandbox's own root).
 ARG BASE
 FROM ${BASE}
-RUN apt-get update && apt-get install -y --no-install-recommends zenity && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends zenity && rm -rf /var/lib/apt/lists/* /var/cache/apt/*.bin

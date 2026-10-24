@@ -1,3 +1,3 @@
-# Sample built from the template: FROM the released base-cli.
+# Sample built from the template: FROM the released base (the sandbox's own root).
 ARG BASE
 FROM ${BASE}

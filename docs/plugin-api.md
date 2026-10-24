@@ -14,7 +14,7 @@ mini VMs or the network except through that exit.
 | `display` | yes | `pty`: opens in the user's Terminal. `gui`: its own window. |
 | `launch.cmd` | yes | The command, as a list (no shell unless you run one). |
 | `launch.env` | no | Extra environment, `NAME: value` (no newlines). |
-| `permissions` | no | Any of `clipboard`, `shared`, `ssh-agent`; the user approves them at install. |
+| `permissions` | no | Any of `clipboard`, `shared`, `ssh-agent`, `sound`, `microphone`; the user approves them at install, and V2Mac asks again when an open app first uses `sound`, `microphone` or `ssh-agent`. |
 | `publisher`, `changelog`, `securityNotes` | no | Publisher, release notes and permission rationale for store review. |
 | `description` | no | One or two sentences on what the app does, shown in the V2Mac Store window. |
 | `icon` | no | SVG filename in the plugin folder, uploaded as a release asset. At most 64 KB, plain shapes and gradients only (`path`, `rect`, `circle`, `g`…, at most 1000 elements): no `use`, text, images, `style`, scripts, DOCTYPE or references other than `url(#id)`. The store copies it into its signed index; V2Mac shows it in the store and frames it in the mini VM's colour as the Mac app's icon. Without one, the app gets its initial. |
@@ -31,7 +31,12 @@ mini VMs or the network except through that exit.
   there is marked as downloaded (quarantine).
 - Clipboard (only with `clipboard`, `gui`): the Mac's text reaches you on ⌘V; your copies reach the
   Mac. The user can switch either direction off per mini VM.
-- `SSH_AUTH_SOCK` (only with `ssh-agent`, `pty`): the Mac's ssh-agent while your app is open.
+- `SSH_AUTH_SOCK` (only with `ssh-agent`, `pty`): the Mac's ssh-agent while your app is open, once
+  the user allows it at the first connection.
+- Sound (`gui`): your own sound card with speakers (`sound`) and a microphone (`microphone`), through
+  PipeWire (ALSA or PulseAudio). When your app first plays or records, V2Mac asks the user; until they
+  allow it, what you play is silent and what you record is silence. The Mac's microphone is open only
+  while you record. Without either permission there is no sound card.
 - `gui` apps run under sway (fullscreen, no decorations) at the window's size; `pty` apps get a real
   terminal with resize and signals.
 
@@ -40,28 +45,33 @@ container runs rootless with no capabilities, a read-only root and a seccomp pro
 
 ## Building
 
-`Containerfile` must start `ARG BASE` / `FROM ${BASE}`; `base.txt` names the released base image
-(`base-cli` for `pty`, `base-gui` for `gui`, which brings GTK, fonts, PipeWire and the display tools).
-Install packages from Debian's archive only. `Scripts/package.sh . "$(cat base.txt)" <url prefix>`
-builds the image, saves it and writes `dist/plugin.json`; the release workflow does this at a tag.
+`Containerfile` must start `ARG BASE` / `FROM ${BASE}`; `base.txt` names the released base: the
+sandbox's own root (Debian 13 with sway, wayvnc, PipeWire, GTK, fonts and the terminal tools), the same
+for `pty` and `gui` apps. Every sandbox already has it, so users download only what your app adds.
+Install packages from Debian's archive only, and remove apt's lists and caches in the same `RUN`
+(`rm -rf /var/lib/apt/lists/* /var/cache/apt/*.bin`), or they ship with your app.
+`Scripts/package.sh . "$(cat base.txt)" <url prefix>` builds the image, keeps only the layers your
+`Containerfile` adds, gzips them into one archive and writes `dist/plugin.json`; the release workflow
+does this at a tag.
 For archive and Docker names, the packager accepts 1–64 ASCII letters, digits, dots or hyphens in
 `id` and `version`, starting with a letter or digit. Run
 `python3 -m unittest discover -s Tests -p '*_test.py'` for its boundary checks.
 
-Each `layers` entry currently holds a complete `docker save` archive, including the base. The
-runtime loads it with Podman; individual OCI blobs are not separate downloads yet. The signed
-index pins the archive's exact bytes. Submission CI checks `from` against the store's `bases.json`;
+`layers` lists exactly one archive: a gzipped tar of the app's own layer tars (`0.tar`, `1.tar`, …),
+which the sandbox unpacks once and stacks on its root. Deleting a whole directory and recreating it in
+a later layer (an opaque directory) is refused; do such work in one `RUN`. The signed index pins the
+archive's exact bytes. Submission CI checks `from` against the store's `bases.json`;
 the helper checks it against the base list bundled with its own release. Review the Containerfile
 at the pinned source commit too: a manifest's `from` declaration alone does not prove ancestry.
 
 ## Local testing
 
-For platform development before GHCR images are released, run `Scripts/build-images.sh` in the
-sandbox repo. Its `out/images/bases.json` lists local references such as
-`base-cli@sha256:<image id>`. From this repo, package a sample with:
+For platform development before the base is released, run `Scripts/build-base.sh` in the sandbox
+repo (after `build-rootfs.sh`). Its `out/images/bases.json` lists a local reference such as
+`base@sha256:<image id>`. From this repo, package a sample with:
 
 ```sh
-Scripts/package.sh hello-pty 'base-cli@sha256:<image id>' \
+Scripts/package.sh hello-gui 'base@sha256:<image id>' \
   http://127.0.0.1:8765 https://github.com/your-name/your-plugin <commit>
 ```
 

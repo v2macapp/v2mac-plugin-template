@@ -10,4 +10,4 @@ GitHub template repo (0BSD) for Secure Sandbox plugins, plus the samples `hello-
 - Plugins get only what `plugin.json` asks for and the user approved. Never add vsock, host paths or
   network setup to a plugin; the runtime owns those. `settings` is reserved, not used by api 1.
 - Keep it minimal: it is what every plugin author copies.
-- Public GitHub template: `LordVersA/v2mac-plugin-template`. Push when the user asks or CI needs to see it.
+- Public GitHub template: `v2macapp/v2mac-plugin-template`. Push when the user asks or CI needs to see it.

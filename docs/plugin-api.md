@@ -1,4 +1,6 @@
-# V2Mac Sandbox plugin API, version 1
+# V2Mac Sandbox plugin API, version 2
+
+Version 2 adds `packages`; a version 1 plugin stays valid.
 
 A plugin is one app that runs in a V2Mac mini VM and shows on the Mac as its own app
 (`<Name> — <Mini VM>.app`). Every mini VM has its own exit server and can't reach the Mac, other
@@ -8,7 +10,7 @@ mini VMs or the network except through that exit.
 
 | Field | Required | Meaning |
 |---|---|---|
-| `api` | yes | `1`. Additive only: a V2Mac that knows an older api hides the plugin. |
+| `api` | yes | `1`, or `2` with `packages`. Additive only: a V2Mac that knows an older api hides the plugin. |
 | `id` | yes | Letters, digits, `.` and `-`, at most 64. Stays the same across versions. |
 | `name`, `version` | yes | Shown to the user. `name` at most 64 characters. |
 | `display` | yes | `pty`: opens in the user's Terminal. `gui`: its own window. |
@@ -18,6 +20,7 @@ mini VMs or the network except through that exit.
 | `publisher`, `changelog`, `securityNotes` | no | Publisher, release notes and permission rationale for store review. |
 | `description` | no | One or two sentences on what the app does, shown in the V2Mac Store window. |
 | `icon` | no | SVG filename in the plugin folder, uploaded as a release asset. At most 64 KB, plain shapes and gradients only (`path`, `rect`, `circle`, `g`…, at most 1000 elements): no `use`, text, images, `style`, scripts, DOCTYPE or references other than `url(#id)`. The store copies it into its signed index; V2Mac shows it in the store and frames it in the mini VM's colour as the Mac app's icon. Without one, the app gets its initial. |
+| `packages` | no | Api 2. Up to 16 Debian package names that make this a recipe: `apt` installs them through the mini VM's exit and keeps them updated from Debian, on a root shared with Linux Packages. Your archive then holds only your settings and scripts. |
 | `settings` | no | Reserved; ignored by api 1. |
 | `from`, `source`, `layers` | filled in | Written by `Scripts/package.sh` at release; don't edit them. |
 
@@ -63,6 +66,9 @@ a later layer (an opaque directory) is refused; do such work in one `RUN`. The s
 archive's exact bytes. Submission CI checks `from` against the store's `bases.json`;
 the helper checks it against the base list bundled with its own release. Review the Containerfile
 at the pinned source commit too: a manifest's `from` declaration alone does not prove ancestry.
+
+A recipe's `Containerfile` only copies files and runs no `apt-get`. Debian updates reach users without a
+new release, so a recipe's settings must keep working or fail visibly across versions.
 
 ## Local testing
 
